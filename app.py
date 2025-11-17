@@ -11,23 +11,23 @@ user_input = st.text_input("Enter a sentence:")
 # ------------------- Lazy Loading Models -------------------
 @st.cache_resource
 def load_correction_model():
-    """
-    Load T5-based correction model and tokenizer
-    """
-    model = AutoModelForSeq2SeqLM.from_pretrained("models/correction_model")
-    tokenizer = AutoTokenizer.from_pretrained("models/correction_model")
+    model = AutoModelForSeq2SeqLM.from_pretrained("maram5/correction_model")
+    tokenizer = AutoTokenizer.from_pretrained("maram5/correction_model")
     return model, tokenizer
 
 @st.cache_resource
 def load_next_word_model():
+
     """
-    Load GPT-2 fine-tuned model and tokenizer
+    Load GPT-2 fine-tuned model from correct folder inside HuggingFace repo
     """
-    next_model_path = "models/next_word_model/gpt2-finetuned-final"
-    model = GPT2LMHeadModel.from_pretrained(next_model_path)
-    tokenizer = GPT2Tokenizer.from_pretrained(next_model_path)
     
-    # Make sure pad_token is set
+
+    model = GPT2LMHeadModel.from_pretrained("maram5/next_word_model",
+    subfolder="gpt2-finetuned-final")
+    tokenizer = GPT2Tokenizer.from_pretrained("maram5/next_word_model",
+    subfolder="gpt2-finetuned-final")
+
     tokenizer.pad_token = tokenizer.eos_token
     return model, tokenizer
 
@@ -64,7 +64,7 @@ if st.button("Predict Next Sentence"):
     st.info(f"Next sentence: {first_sentence.strip()}")
 
 if st.button("Correct + Predict"):
-    # ---------------- Correction ----------------
+    # Correction
     with st.spinner("Loading correction model..."):
         corr_model, corr_tokenizer = load_correction_model()
     with st.spinner("Generating corrected sentence..."):
@@ -73,7 +73,7 @@ if st.button("Correct + Predict"):
         corrected = corr_tokenizer.decode(outputs[0], skip_special_tokens=True)
     st.success(f"Corrected: {corrected}")
 
-    # ---------------- Next Sentence Prediction ----------------
+    # Next Sentence Prediction
     with st.spinner("Loading next sentence model..."):
         next_model, next_tokenizer = load_next_word_model()
     with st.spinner("Generating next sentence..."):
